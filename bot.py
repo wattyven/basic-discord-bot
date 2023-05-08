@@ -7,9 +7,9 @@ from gpt4free import Provider
 
 with open("bot_keys.txt", "r") as f: # Opens the bot_keys.txt file and reads the keys.
     keys = [i.strip() for i in f.readlines()] # removes the newline characters from the keys
-    print(keys)
+    # print(keys)
 
-botID = keys[0] # discord ID of our bot
+botID = keys[0] # discord ID of our bot, just for reference
 botToken = keys[1] # discord bot token
 animeDBKey = keys[2] # API key for the Anime DB API
 
@@ -92,8 +92,50 @@ async def chat(ctx, *, message):
     await ctx.send(response)
 
 @client.command()
+async def searchid(ctx, *, message):
+    '''anime search by Anilist ID using the Anilist GraphQL APIv2'''
+    # define query as a multi-line string. You can also use triple quotes.
+    query = ''' 
+    query ($id: Int) { # Define which variables will be used in the query (id)
+    Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+        id
+        title {
+        romaji
+        english
+        native
+        }
+    }
+    }
+    '''
+    url = 'https://graphql.anilist.co'
+    try:
+        id = int(message.replace(" ", ""))
+    except ValueError:
+        embed = discord.Embed(title = "Error", description="Sorry, you need to enter a valid numerical ID.", color=discord.Color.red())
+        await ctx.send(embed = embed)
+        return
+    if type(id) == int:
+        variables = {
+            'id': id
+        }
+        response = requests.post(url, json={'query': query, 'variables': variables})
+        # response is a json object, parse it for titles
+        response = response.json()
+        try:
+            title_dict = response["data"]["Media"]["title"]
+            embed = discord.Embed(title = title_dict["english"], color=discord.Color.blue())
+            embed.add_field(name="Original Title", value=title_dict["native"], inline=False)
+            embed.add_field(name="Romaji Title", value=title_dict["romaji"], inline=True)
+            embed.add_field(name="Query ID", value=id, inline=True)
+            await ctx.send(embed = embed)
+        except TypeError:
+            embed = discord.Embed(title = "Error", description="Sorry, that ID doesn't exist.", color=discord.Color.red())
+            await ctx.send(embed = embed)
+            return
+
+@client.command()
 async def search2(ctx, *, message):
-    '''anime search using the Anilist APIv2, powered by GraphQL'''
+    '''anime search by title using the Anilist GraphQL APIv2'''
     # define query as a multi-line string. You can also use triple quotes.
     query = ''' 
     query ($id: Int) { # Define which variables will be used in the query (id)
@@ -111,8 +153,6 @@ async def search2(ctx, *, message):
     url = 'https://graphql.anilist.co'
     try:
         val = int(message.replace(" ", ""))
-        # i just realized this won't work because of titles like 86. gonna split this up into
-        # $search for search by title and $searchid for search by id. WIP
     except ValueError:
         val = message
 
