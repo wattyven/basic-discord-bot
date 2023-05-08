@@ -64,6 +64,9 @@ async def searchid(ctx, *, message):
         native
         }
         type
+        coverImage {
+            extraLarge
+        }
     }
     }
     '''
@@ -84,6 +87,7 @@ async def searchid(ctx, *, message):
         try:
             title_dict = response["data"]["Media"]["title"]
             embed = discord.Embed(title = title_dict["english"], color=discord.Color.blue())
+            embed.set_thumbnail(url=response["data"]["Media"]["coverImage"]["extraLarge"])
             embed.add_field(name="Original Title", value=title_dict["native"], inline=False)
             embed.add_field(name="Romaji Title", value=title_dict["romaji"], inline=False)
             embed.add_field(name="Media Type", value=response["data"]["Media"]["type"], inline=True)
@@ -124,6 +128,9 @@ async def search(ctx, *, message):
                 description (asHtml: false)
                 type
                 status
+                coverImage {
+                    extraLarge
+                }
             }
         }
     }
@@ -164,6 +171,7 @@ async def search(ctx, *, message):
             else:
                 embed = discord.Embed(title = i["title"]["english"], color=discord.Color.blue())
             embed.add_field(name="Description", value=description, inline=False)
+            embed.set_thumbnail(url=i["coverImage"]["extraLarge"])
             embed.add_field(name="Original Title", value=i["title"]["native"], inline=False)
             embed.add_field(name="Media Type", value=i["type"], inline=True)
             embed.add_field(name="Status", value=i["status"], inline=True)
