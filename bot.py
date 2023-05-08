@@ -1,7 +1,7 @@
 import requests
 import discord
 from discord.ext import commands, pages
-from datetime import datetime
+import time
 import gpt4free
 from gpt4free import Provider
 import re # i wanted to avoid regex sigh
@@ -50,9 +50,6 @@ async def readme(ctx):
 @client.command()
 async def searchid(ctx, *, message):
     '''anime search by Anilist ID using the Anilist GraphQL APIv2'''
-    now = datetime.now() # Gets the current time. 
-
-    current_time = now.strftime("%H:%M:%S") # Formats the time to HH:MM:SS
     # define query as a multi-line string. You can also use triple quotes.
     query = ''' 
     query ($id: Int) { # Define which variables will be used in the query (id)
@@ -84,6 +81,8 @@ async def searchid(ctx, *, message):
         response = requests.post(url, json={'query': query, 'variables': variables})
         # response is a json object, parse it for titles
         response = response.json()
+        unix_time = int(time.time())
+        discord_time = "<t:" + str(unix_time) + ":F>"
         try:
             title_dict = response["data"]["Media"]["title"]
             embed = discord.Embed(title = title_dict["english"], color=discord.Color.blue())
@@ -92,7 +91,7 @@ async def searchid(ctx, *, message):
             embed.add_field(name="Romaji Title", value=title_dict["romaji"], inline=False)
             embed.add_field(name="Media Type", value=response["data"]["Media"]["type"], inline=True)
             embed.add_field(name="Query ID", value=id, inline=True)
-            embed.add_field(name="Checked at", value=current_time, inline=True)
+            embed.add_field(name="Checked at", value=discord_time, inline=True)
             await ctx.send(embed = embed)
         except TypeError:
             embed = discord.Embed(title = "Error", description="Sorry, that ID doesn't exist.", color=discord.Color.red())
@@ -104,9 +103,6 @@ async def search(ctx, *, message):
     '''anime search by title using the Anilist GraphQL APIv2.
     usage: $search [num=XX] [search terms]
     num=XX is optional, where XX is the number of results to return. Default is 10.'''
-    now = datetime.now() # Gets the current time. 
-
-    current_time = now.strftime("%H:%M:%S") # Formats the time to HH:MM:SS
     # define query as a multi-line string. You can also use triple quotes.
     query = '''
     query ($id: Int, $page: Int, $perPage: Int, $search: String) {
@@ -158,7 +154,8 @@ async def search(ctx, *, message):
 
     response = requests.post(url, json={'query': query, 'variables': variables})
     response = response.json()
-
+    unix_time = int(time.time())
+    discord_time = "<t:" + str(unix_time) + ":F>"
     embeds = []
     try:
         for i in response["data"]["Page"]["media"]:
@@ -176,7 +173,7 @@ async def search(ctx, *, message):
             embed.add_field(name="Media Type", value=i["type"], inline=True)
             embed.add_field(name="Status", value=i["status"], inline=True)
             embed.add_field(name="Anilist ID", value=i["id"], inline=True)
-            embed.add_field(name="Checked at", value=current_time, inline=False)
+            embed.add_field(name="Checked at", value=discord_time, inline=False)
             embeds.append(embed)
             paginator = pages.Paginator(pages=embeds) # Creates a paginator object.
         await paginator.send(ctx) # Sends the paginator object to the user.
