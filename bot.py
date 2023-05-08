@@ -10,7 +10,6 @@ import re # i wanted to avoid regex sigh
 # https://anilist.gitbook.io/anilist-apiv2-docs/
 # https://anilist.github.io/ApiV2-GraphQL-Docs/
 
-
 with open("bot_keys.txt", "r") as f: # Opens the bot_keys.txt file and reads the keys.
     keys = [i.strip() for i in f.readlines()] # removes the newline characters from the keys
     # print(keys)
@@ -64,6 +63,7 @@ async def searchid(ctx, *, message):
         english
         native
         }
+        type
     }
     }
     '''
@@ -85,7 +85,8 @@ async def searchid(ctx, *, message):
             title_dict = response["data"]["Media"]["title"]
             embed = discord.Embed(title = title_dict["english"], color=discord.Color.blue())
             embed.add_field(name="Original Title", value=title_dict["native"], inline=False)
-            embed.add_field(name="Romaji Title", value=title_dict["romaji"], inline=True)
+            embed.add_field(name="Romaji Title", value=title_dict["romaji"], inline=False)
+            embed.add_field(name="Media Type", value=response["data"]["Media"]["type"], inline=True)
             embed.add_field(name="Query ID", value=id, inline=True)
             embed.add_field(name="Checked at", value=current_time, inline=True)
             await ctx.send(embed = embed)
@@ -120,7 +121,9 @@ async def search(ctx, *, message):
                     english
                     romaji
                 }
-                description
+                description (asHtml: false)
+                type
+                status
             }
         }
     }
@@ -162,8 +165,10 @@ async def search(ctx, *, message):
                 embed = discord.Embed(title = i["title"]["english"], color=discord.Color.blue())
             embed.add_field(name="Description", value=description, inline=False)
             embed.add_field(name="Original Title", value=i["title"]["native"], inline=False)
+            embed.add_field(name="Media Type", value=i["type"], inline=True)
+            embed.add_field(name="Status", value=i["status"], inline=True)
             embed.add_field(name="Anilist ID", value=i["id"], inline=True)
-            embed.add_field(name="Checked at", value=current_time, inline=True)
+            embed.add_field(name="Checked at", value=current_time, inline=False)
             embeds.append(embed)
             paginator = pages.Paginator(pages=embeds) # Creates a paginator object.
         await paginator.send(ctx) # Sends the paginator object to the user.
@@ -172,7 +177,7 @@ async def search(ctx, *, message):
         embed = discord.Embed(title = "Error", description="Sorry, no results found.", color=discord.Color.red())
         await ctx.send(embed = embed)
         return
-    
+       
 @client.command()
 async def chat(ctx, *, message):
     '''GPT-4 powered chat, powered by You through GPT4Free'''
