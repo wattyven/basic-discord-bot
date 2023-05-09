@@ -3,6 +3,8 @@
 
 a silly little bot that returns searches for anime and other media, and has basic chat functionality. more to come. 
 
+leverages the anilist graphql apiv2 for search results and recommendations.
+
 
 returns results in individual pages, with synopsis, alternative titles, and airing status. WIP. 
 
