@@ -1,5 +1,4 @@
-# Discord Anime Bot
-
+# A Basic Discord Bot
 
 a silly little bot that returns searches for anime and other media, and has basic chat functionality. more to come. 
 
