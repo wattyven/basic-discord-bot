@@ -220,8 +220,7 @@ async def search(ctx, *, message):
     '''anime search by title using the Anilist GraphQL APIv2.
     usage: $search [num=XX] [search terms]
     num=XX is optional, where XX is the number of results to return. Default is 10.'''
-    # define query as a multi-line string. You can also use triple quotes.
-    
+   
     num, search_terms = get_terms(message)
     
     variables = {
@@ -249,7 +248,6 @@ async def search(ctx, *, message):
 @client.command()
 async def chat(ctx, *, message):
     '''GPT-4 powered chat, powered by You through GPT4Free'''
-    # message = " ".join(text) # don't need this atm but I'll keep it here just in case
     response = gpt4free.Completion.create(Provider.You, prompt=message)
     # remove "As an AI language model, " from the beginning of the response
     response = response.replace("As an AI language model, ", "")
