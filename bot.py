@@ -41,6 +41,7 @@ id_query = '''
         }
         status
         description (asHtml: false)
+        synonyms
     }
     }
     '''
@@ -68,6 +69,7 @@ big_query = '''
                 coverImage {
                     extraLarge
                 }
+                synonyms
             }
         }
     }
@@ -106,6 +108,7 @@ rec_media_query = '''
                 coverImage {
                     extraLarge
                 }
+                synonyms
             }
         }
         }
@@ -137,6 +140,7 @@ def get_terms(message):
         return (num, search_terms)
     
 def detailed_embed(media, discord_time):
+    gen_url = "https://anilist.co/" + str(media["type"]) + "/" + str(media["id"])
     try:
         try:
             description = media["description"]
@@ -147,16 +151,28 @@ def detailed_embed(media, discord_time):
             description = "No description available."
         if media["title"]["english"] == None:
             try:
-                embed = discord.Embed(title = media["title"]["romaji"], description=description, color=discord.Color.blue())
+                embed = discord.Embed(title = media["title"]["romaji"], description=description, url=gen_url, color=discord.Color.blue())
             except:
-                embed = discord.Embed(title = media["title"]["native"], description=description, color=discord.Color.blue())
+                embed = discord.Embed(title = media["title"]["native"], description=description, url=gen_url, color=discord.Color.blue())
         else:
-            embed = discord.Embed(title = media["title"]["english"], description=description, color=discord.Color.blue())
+            embed = discord.Embed(title = media["title"]["english"], description=description, url=gen_url, color=discord.Color.blue())
         try:
             embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
         except:
             pass
         embed.add_field(name="Original Title", value=media["title"]["native"], inline=False)
+        try:
+            syns = media["synonyms"]
+            # keep only syns that use the ascii chars
+            for i in syns:
+                if not i.isascii(): 
+                    syns.remove(i)
+            syns = ", ".join(syns)
+            # only if there are synonyms, add the synonyms field
+            if syns != "":
+                embed.add_field(name="Alternate Titles", value=syns, inline=False)
+        except:
+            pass
         embed.add_field(name="Media Type", value=media["type"], inline=True)
         embed.add_field(name="Status", value=media["status"], inline=True)
         embed.add_field(name="Anilist ID", value=media["id"], inline=True)
