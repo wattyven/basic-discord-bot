@@ -17,7 +17,7 @@ with open("bot_keys.txt", "r") as f: # Opens the bot_keys.txt file and reads the
 
 botID = keys[0] # discord ID of our bot, just for reference
 botToken = keys[1] # discord bot token
-animeDBKey = keys[2] # API key for the Anime DB API, no longer used. 
+holodexKey = keys[2] # API key for Holodex 
 
 intents = discord.Intents.default() # Sets the bot's intents to default.
 intents.message_content = True # Allows the bot to read messages.
