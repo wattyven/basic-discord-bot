@@ -1,6 +1,7 @@
 import requests
 import discord
 from discord.ext import commands, pages
+import datetime
 import time
 import gpt4free
 from gpt4free import Provider
@@ -17,7 +18,7 @@ with open("bot_keys.txt", "r") as f: # Opens the bot_keys.txt file and reads the
 
 botID = keys[0] # discord ID of our bot, just for reference
 botToken = keys[1] # discord bot token
-holodexKey = keys[2] # API key for Holodex 
+holodexKey = keys[2] # API key for Holodex
 
 intents = discord.Intents.default() # Sets the bot's intents to default.
 intents.message_content = True # Allows the bot to read messages.
@@ -181,6 +182,11 @@ def detailed_embed(media, discord_time):
     except:
         embed = discord.Embed(title = "Sorry, an error has occurred while loading this page.", description="For troubleshooting, please note your exact search query and the page you are seeing this error on, and open an issue on the Github page for this bot, accessible by clicking the link in the title of this embed.", url="https://github.com/wattyven/discord-anime-bot", color=discord.Color.red())
         return embed
+    
+def yt_thumb(ytid):
+    '''get the thumbnail for a youtube video'''
+    url = "https://img.youtube.com/vi/" + ytid + "/maxresdefault.jpg"
+    return url
     
 @client.event
 async def on_ready():
@@ -358,5 +364,47 @@ async def rec(ctx, *, message):
         embed = discord.Embed(title = "Error", description="Sorry, no results found.", color=discord.Color.red())
         await ctx.send(embed = embed)
         return
+    
+@client.command()
+async def live(ctx):
+    # Get live streams from Holodex API
+    url = "https://holodex.net/api/v2/live"
+    yt = "https://www.youtube.com/watch?v="
+    headers = {
+        "Accept": "application/json",
+        "X-APIKEY": holodexKey
+    }
+    querystring = {"org":"Hololive"}
+    response = requests.get(url, headers=headers, params=querystring)
+    data = response.json()
+    # discord_time = "<t:" + str(int(time.time())) + ":F>" 
+    # not currently used
+
+    # For each live stream, create an embed
+    embeds = []
+    for stream in data:
+        if stream['status'] == "live" and stream['live_viewers'] > 0:
+            embed = discord.Embed(title=stream['title'], url = yt + stream['id'], description='**' + stream['channel']['name'] + '**')
+            embed.set_image(url=yt_thumb(stream['id']))
+            timeavailable = datetime.datetime.strptime(stream["available_at"][:-5], "%Y-%m-%dT%H:%M:%S")
+            timeavailable = timeavailable - datetime.timedelta(hours=7)
+            timeavailable = "<t:" + str(int(time.mktime(timeavailable.timetuple()))) + ":F>"
+            embed.add_field(name='Live Since', value=timeavailable)
+            embed.add_field(name='Viewers', value=stream['live_viewers'], inline=True)
+            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " PST")
+            embeds.append(embed)
+        elif stream['status'] == "upcoming":
+            embed = discord.Embed(title=stream['title'], url = yt + stream['id'], description='**' + stream['channel']['name'] + '**')
+            embed.set_image(url=yt_thumb(stream['id']))
+            timeavailable = datetime.datetime.strptime(stream["start_scheduled"][:-5], "%Y-%m-%dT%H:%M:%S")
+            timeavailable = timeavailable - datetime.timedelta(hours=7)
+            timeavailable = "<t:" + str(int(time.mktime(timeavailable.timetuple()))) + ":F>"
+            embed.add_field(name='Start Time', value=timeavailable)
+            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " PST")
+            embeds.append(embed)
+
+    # Create a Paginator instance and send it
+    paginator = pages.Paginator(pages=embeds, timeout=600.0)
+    await paginator.send(ctx)
 
 client.run(Token)
