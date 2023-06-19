@@ -7,7 +7,7 @@ leverages the anilist graphql apiv2 for search results and recommendations.
 
 returns results in individual pages, with synopsis, alternative titles, and airing status. WIP. 
 
-also returns currently live hololive streams, as well as upcoming streams. 
+also returns currently live hololive streams, as well as upcoming streams, courtesy of the https://holodex.net/ API. 
 
 
 
