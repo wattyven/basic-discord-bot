@@ -383,7 +383,7 @@ async def live(ctx):
     # For each live stream, create an embed
     embeds = []
     for stream in data:
-        if stream['status'] == "live" and stream['live_viewers'] > 0:
+        if stream['status'] == "live" and stream['type'] == "stream" and stream['live_viewers'] > 0:
             embed = discord.Embed(title=stream['title'], url = yt + stream['id'], description='**' + stream['channel']['name'] + '**')
             embed.set_image(url=yt_thumb(stream['id']))
             timeavailable = datetime.datetime.strptime(stream["available_at"][:-5], "%Y-%m-%dT%H:%M:%S")
@@ -391,16 +391,19 @@ async def live(ctx):
             timeavailable = "<t:" + str(int(time.mktime(timeavailable.timetuple()))) + ":F>"
             embed.add_field(name='Live Since', value=timeavailable)
             embed.add_field(name='Viewers', value=stream['live_viewers'], inline=True)
-            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " PST")
+            # this next line is a bit of a hack, because footers can't have markdown
+            # and because my AWS instance is set to UTC, we might as well just use that
+            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " UTC")
             embeds.append(embed)
-        elif stream['status'] == "upcoming":
+        elif stream['type'] == "stream" and stream['status'] == "upcoming":
             embed = discord.Embed(title=stream['title'], url = yt + stream['id'], description='**' + stream['channel']['name'] + '**')
             embed.set_image(url=yt_thumb(stream['id']))
             timeavailable = datetime.datetime.strptime(stream["start_scheduled"][:-5], "%Y-%m-%dT%H:%M:%S")
             timeavailable = timeavailable - datetime.timedelta(hours=7)
             timeavailable = "<t:" + str(int(time.mktime(timeavailable.timetuple()))) + ":F>"
             embed.add_field(name='Start Time', value=timeavailable)
-            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " PST")
+            # same shit as above
+            embed.set_footer(text="Checked at " + datetime.datetime.now().strftime("%I:%M %p") + " UTC")
             embeds.append(embed)
 
     # Create a Paginator instance and send it
