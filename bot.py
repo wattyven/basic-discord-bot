@@ -3,8 +3,6 @@ import discord
 from discord.ext import commands, pages
 import datetime
 import time
-import gpt4free
-from gpt4free import Provider
 from pprint import pprint # used for debugging, probably won't be seen here
 import re # i wanted to avoid regex sigh
 
@@ -266,14 +264,6 @@ async def search(ctx, *, message):
         embed = discord.Embed(title = "Error", description="Sorry, no results found.", color=discord.Color.red())
         await ctx.send(embed = embed)
         return
-       
-@client.command()
-async def chat(ctx, *, message):
-    '''GPT-4 powered chat, powered by You through GPT4Free'''
-    response = gpt4free.Completion.create(Provider.You, prompt=message)
-    # remove "As an AI language model, " from the beginning of the response
-    response = response.replace("As an AI language model, ", "")
-    await ctx.send(response)
     
 @client.command()
 async def recid(ctx, *, message):
