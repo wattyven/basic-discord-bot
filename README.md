@@ -1,6 +1,6 @@
 # A Basic Discord Bot
 
-a silly little bot that returns searches for anime and other media, and has basic chat functionality. more to come. 
+a silly little bot that returns searches for anime and other media. more to come. 
 
 leverages the anilist graphql apiv2 for search results and recommendations.
 
